@@ -1,0 +1,29 @@
+{
+  "name": "vanilla-site",
+  "version": "1.0.0",
+  "description": "Iván Lynch Website",
+  "keywords": [
+    "javascript",
+    "css",
+    "html",
+    "vanilla"
+  ],
+  "homepage": "https://github.com/ivanlynch/vanilla-site#readme",
+  "bugs": {
+    "url": "https://github.com/ivanlynch/vanilla-site/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ivanlynch/vanilla-site.git"
+  },
+  "license": "ISC",
+  "author": "Iván Lynch",
+  "type": "commonjs",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "build": "node src/scripts/build.js"
+  }
+}
