@@ -25,6 +25,12 @@ vanilla-site/
 │   ├── assets/           # Recursos estáticos
 │   │   ├── fonts/        # Fuentes web (Righteous, Merriweather)
 │   │   └── favicon.ico   # Ícono del sitio
+│   ├── components/       # Componentes HTML reutilizables
+│   │   ├── header.html   # Header con navegación
+│   │   └── footer.html   # Footer del sitio
+│   ├── pages/            # Páginas adicionales del sitio
+│   ├── scripts/          # Scripts JavaScript
+│   │   └── components.js # Utilidad de carga de componentes
 │   ├── index.html        # Página principal
 │   ├── styles.css        # Estilos globales
 │   └── index.js          # JavaScript principal
@@ -32,13 +38,54 @@ vanilla-site/
 └── .gitignore            # Archivos ignorados por Git
 ```
 
-### Frontend
-- **HTML5**: estructura semántica
-- **CSS3**: con CSS Layers
-- **JavaScript**: puro (Vanilla JS), sin frameworks
-- **Fonts**: Righteous Regular, Merriweather Regular, Merriweather Bold
+## Component System
+
+### Arquitectura de Componentes
+
+Para mantener el código DRY (Don't Repeat Yourself) sin afectar el SEO, el proyecto utiliza un sistema de componentes basado en **placeholders HTML** y un **build script**.
+
+#### Funcionamiento:
+
+1. **Componentes Reutilizables** (`src/components/`)
+   - `header.html`: Header con navegación principal
+   - `footer.html`: Footer común del sitio
+
+2. **Placeholders en páginas**
+   ```html
+   <!-- #header -->
+   <main>
+     <!-- Contenido de la página -->
+   </main>
+   <!-- #footer -->
+   ```
+
+3. **Build Script** (próximamente)
+   - Lee los archivos de componentes
+   - Reemplaza los placeholders `<!-- #component-name -->` con el HTML real
+   - Genera archivos HTML estáticos completos en `dist/`
+   - **Resultado**: HTML puro optimizado para SEO, sin JavaScript de carga dinámica
+
+### Ventajas de este enfoque:
+
+✅ **SEO-friendly**: HTML estático completo en cada página  
+✅ **DRY**: Componentes definidos una sola vez  
+✅ **Sin JavaScript requerido**: Funciona sin JS habilitado  
+✅ **Performance**: No hay carga asíncrona de componentes  
+✅ **Mantenibilidad**: Cambios en header/footer se propagan automáticamente
+
+## Frontend Stack
+
+- **HTML5**: Estructura semántica
+- **CSS3**: Con CSS Layers para organización modular
+- **JavaScript**: Vanilla JS puro, sin frameworks
+- **Fonts**: 
+  - Righteous Regular (títulos)
+  - Merriweather Regular y Bold (texto)
 
 ## Design Principles
 
 - **Mobile-first approach**: Diseño responsive con viewport meta tag
 - **Vanilla (sin frameworks)**: HTML, CSS y JavaScript nativos
+- **SEO-first**: Contenido en HTML estático, no generado por JavaScript
+- **Progressive Enhancement**: JavaScript mejora la experiencia pero no es requerido
+- **Component-based**: Reutilización de código mediante componentes sin afectar SEO
