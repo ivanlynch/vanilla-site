@@ -24,6 +24,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "build": "node src/scripts/build.js"
+    "build": "node src/scripts/build.js",
+    "dev": "node src/scripts/dev.mjs"
   }
 }
