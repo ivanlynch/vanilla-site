@@ -191,6 +191,27 @@
     --container-xl: 48rem;
     --container-2xl: 64rem;
     --container-6xl: 72rem;
+
+    /* Responsive Breakpoints (2025 Standards) */
+    /* Mobile Devices */
+    --breakpoint-xs: 320px;
+    /* Extra Small Mobile (Portrait) */
+    --breakpoint-sm: 481px;
+    /* Small Mobile (Landscape) */
+
+    /* Tablets */
+    --breakpoint-md: 601px;
+    /* Small Tablets (Portrait) */
+    --breakpoint-lg: 769px;
+    /* Large Tablets (Landscape) */
+
+    /* Laptops and Desktops */
+    --breakpoint-xl: 1025px;
+    /* Small Desktops and Laptops */
+    --breakpoint-2xl: 1281px;
+    /* Large Desktops */
+    --breakpoint-3xl: 1441px;
+    /* Extra-Large Screens */
   }
 }
 
