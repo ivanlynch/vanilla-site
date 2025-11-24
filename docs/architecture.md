@@ -1,32 +1,84 @@
 # Architecture Overview
-Este documento describe la arquitectura del proyecto **vanilla-site**, un sitio web personal construido con tecnologías web nativas (HTML, CSS, JavaScript) sin frameworks. Este documento debe actualizarse a medida que el proyecto evoluciona.
+Este documento describe la arquitectura del proyecto **vanilla-site**, un sitio web personal construido con tecnologías web nativas (HTML, CSS, JavaScript) sin frameworks, siguiendo el patrón arquitectónico **MPA (Multi-Page Application)**. Este documento debe actualizarse a medida que el proyecto evoluciona.
+
+## Patrón Arquitectónico: MPA (Multi-Page Application)
+
+Este proyecto implementa una arquitectura **MPA vanilla** donde:
+- Cada sección principal es una página HTML independiente
+- La navegación entre páginas genera peticiones HTTP tradicionales
+- El contenido está presente en el HTML inicial para optimal SEO
+- JavaScript enriquece la experiencia pero no controla la navegación principal
+- El routing es gestionado por el servidor/sistema de archivos, no por JavaScript
+
+**Razones para elegir MPA:**
+- ✅ SEO crítico - cada página es indexable directamente por buscadores
+- ✅ Performance en primera carga - contenido visible inmediatamente
+- ✅ Simplicidad - arquitectura más sencilla sin necesidad de router JS complejo
+- ✅ Mobile-first - mejor rendimiento en dispositivos de gama media/baja
+- ✅ Sin estado complejo - cada página maneja su propio contexto
 
 ## 1. Project Structure
-El proyecto sigue una estructura simple y organizada, con todo el código fuente dentro del directorio `src/` para mejor organización.
+
+El proyecto sigue una estructura MPA con páginas HTML independientes, organizado dentro del directorio `src/`. En el futuro, cada sección principal (Home, About, Blog, etc.) tendrá su propio archivo HTML.
 
 ```
 vanilla-site/
 ├── docs/                 # Documentación del proyecto
-│   └── architecture.md   # Este documento (arquitectura del proyecto)
-├── src/                  # Código fuente de la aplicación
-│   ├── assets/           # Recursos estáticos
+│   ├── architecture.md   # Arquitectura del proyecto
+│   └── guide.md          # Guía MPA vs SPA
+├── src/                  # Código fuente de la aplicación (arquitectura MPA)
+│   ├── assets/           # Recursos estáticos compartidos
 │   │   ├── fonts/        # Fuentes personalizadas (Righteous, Merriweather)
 │   │   └── favicon.ico   # Ícono del sitio
-│   ├── index.html        # Punto de entrada principal de la aplicación
-│   ├── styles.css        # Estilos globales con CSS Layers
-│   └── index.js          # Lógica JavaScript del sitio
+│   ├── styles/           # Estilos (futuro: CSS modular por página)
+│   │   └── main.css      # Estilos globales compartidos
+│   ├── scripts/          # JavaScript (futuro: módulos por página)
+│   │   └── common.js     # Funcionalidad compartida
+│   ├── index.html        # Página principal (Home)
+│   ├── about.html        # Página About (futuro)
+│   ├── blog.html         # Página Blog (futuro)
+│   └── contact.html      # Página Contact (futuro)
 ├── README.md             # Documentación principal del proyecto
 └── .gitignore            # Archivos ignorados por Git
 ```
 
+**Estructura MPA actual vs futura:**
+- **Actual (MVP)**: Una sola página `index.html` con todas las secciones
+- **Futuro**: Páginas HTML separadas para cada sección principal
+
 ## 2. High-Level System Diagram
 
-Este es un sitio web estático del lado del cliente sin backend:
+**Arquitectura MPA** - sitio web estático con múltiples páginas HTML:
 
 ```
-[User Browser] <--> [src/index.html + src/styles.css + src/index.js]
+[User Browser] <--> [index.html | about.html | blog.html | contact.html]
                          |
-                         +--> [Static Assets: src/assets/fonts, src/assets/favicon]
+                         +--> [Shared Assets]
+                         |      ├── styles/main.css (estilos globales)
+                         |      ├── scripts/common.js (JS compartido)
+                         |      └── assets/ (fonts, favicon)
+                         |
+                         +--> [Page-specific Assets]
+                                ├── styles/home.css
+                                ├── styles/blog.css
+                                └── scripts/blog.js
+```
+
+**Flujo de navegación MPA:**
+```
+[Usuario en index.html]
+        |
+        v
+[Click en link: <a href="about.html">]
+        |
+        v
+[Navegador hace HTTP request a about.html]
+        |
+        v
+[Servidor devuelve about.html completo]
+        |
+        v
+[Navegador renderiza nueva página]
 ```
 
 ## 3. Core Components
@@ -35,7 +87,7 @@ Este es un sitio web estático del lado del cliente sin backend:
 
 **Name**: Vanilla Site - Personal Website
 
-**Description**: Sitio web personal de portafolio para Iván Lynch, que incluye secciones de Home, About, Post y Blog. El sitio presenta información profesional y está diseñado con un enfoque mobile-first.
+**Description**: Sitio web personal de portafolio para Iván Lynch implementado como **MPA vanilla**. Incluye páginas separadas para Home, About, Blog y Contact. Cada página es un HTML independiente con contenido completo para optimal SEO. Diseñado con enfoque mobile-first.
 
 **Technologies**: 
 - HTML5 (estructura semántica)
@@ -45,11 +97,16 @@ Este es un sitio web estático del lado del cliente sin backend:
 
 **Deployment**: Estático - puede desplegarse en cualquier servicio de hosting estático (Vercel, Netlify, GitHub Pages, etc.)
 
+**Architecture Pattern**: MPA (Multi-Page Application)
+
 **Design Philosophy**: 
-- Mobile-first approach
-- Sin frameworks ni dependencias
-- Aprovecha las capacidades nativas de los navegadores modernos
-- CSS modular usando CSS Layers para mejor organización
+- **MPA vanilla** - páginas HTML independientes con navegación tradicional
+- **Mobile-first approach** - diseño responsive priorizando dispositivos móviles
+- **Sin frameworks** - HTML, CSS y JavaScript nativos solamente
+- **SEO-first** - contenido presente en HTML inicial, no generado por JS
+- **Progressive Enhancement** - JS enriquece la experiencia, no la controla
+- **CSS modular** - CSS Layers + archivos específicos por página
+- **Performance** - primera carga rápida, contenido visible inmediatamente
 
 ### 3.2. Backend Services
 
@@ -102,14 +159,56 @@ Este es un sitio web estático del lado del cliente sin backend:
 - Font loading API
 - ES6+ JavaScript
 
-## 9. Future Considerations / Roadmap
+## 9. Future Considerations / Roadmap (MPA Architecture)
 
-- **Componentización**: Modularizar JavaScript en componentes reutilizables dentro de `src/`
-- **Contenido dinámico**: Integración con un CMS headless o API para blog posts
-- **Performance**: Implementar lazy loading para imágenes y recursos
-- **PWA**: Convertir el sitio en Progressive Web App con Service Workers
-- **Testing**: Agregar testing automatizado (Playwright, Vitest)
-- **Build tooling**: Considerar bundling mínimo para optimización (sin comprometer la filosofía vanilla)
+### Fase 1: Separación de páginas
+- **Separar secciones en páginas HTML independientes**:
+  - `index.html` → Home
+  - `about.html` → About
+  - `blog.html` → Blog (con lista de posts)
+  - `contact.html` → Contact
+- **Crear estructura de estilos modular**:
+  - `styles/main.css` → Estilos globales compartidos
+  - `styles/home.css`, `styles/blog.css`, etc. → Estilos específicos por página
+- **Crear módulos JS por página**:
+  - `scripts/common.js` → Funcionalidad compartida
+  - `scripts/blog.js`, `scripts/contact.js`, etc. → JS específico por página
+
+### Fase 2: Componentes compartidos (MPA-friendly)
+- **Componentes reutilizables** sin depender de frameworks:
+  - Header/Navigation → incluido en cada HTML con Server-Side Includes o build step
+  - Footer → compartido entre páginas
+  - Web Components para elementos interactivos (opcional)
+- **Navegación mejorada**:
+  - Active states en navegación según página actual
+  - Breadcrumbs para mejor UX
+
+### Fase 3: Contenido y funcionalidad
+- **Blog dinámico** con arquitectura MPA:
+  - Página índice `blog.html` con lista de posts
+  - Páginas individuales `blog/post-slug.html` para cada artículo
+  - Metadata completa en cada HTML para SEO óptimo
+- **CMS headless** (opcional):
+  - Integración con CMS para gestión de contenido
+  - Build-time generation de páginas desde el CMS
+
+### Fase 4: Optimización y features avanzadas
+- **Performance**:
+  - Lazy loading de imágenes con `loading="lazy"`
+  - Preload de fuentes y recursos críticos
+  - Link prefetching para páginas relacionadas
+- **PWA capabilities**:
+  - Service Worker para caching de páginas visitadas
+  - Offline support básico
+  - Manifest para instalabilidad
+- **Testing**:
+  - Tests E2E con Playwright (navegación entre páginas)
+  - Tests de accesibilidad
+  - Lighthouse CI para performance tracking
+- **Build tooling mínimo**:
+  - Optimización de assets (minificación CSS/JS)
+  - Procesamiento de imágenes
+  - Sin comprometer la filosofía vanilla - solo optimizaciones
 
 ## 10. Project Identification
 
@@ -123,7 +222,7 @@ Este es un sitio web estático del lado del cliente sin backend:
 
 **Migration Goal**: Migrar de Next.js a vanilla JavaScript para reducir complejidad y aprovechar capacidades nativas de navegadores modernos
 
-**Date of Last Update**: 2025-11-22
+**Date of Last Update**: 2025-11-24
 
 ## 11. Design System
 
@@ -149,10 +248,20 @@ El proyecto usa **CSS Layers** para organizar estilos en capas con prioridades b
 
 ## 12. Glossary / Acronyms
 
+**MPA (Multi-Page Application)**: Arquitectura web donde cada ruta corresponde a un documento HTML independiente, con navegación tradicional mediante peticiones HTTP
+
+**SPA (Single-Page Application)**: Arquitectura web con un único HTML donde el routing es manejado por JavaScript
+
 **Vanilla JS**: JavaScript puro sin frameworks o librerías externas
 
 **CSS Layers**: Característica moderna de CSS que permite organizar estilos en capas con prioridades explícitas
 
 **Mobile-first**: Estrategia de diseño que prioriza la experiencia móvil antes que desktop
 
+**Progressive Enhancement**: Metodología de desarrollo que proporciona funcionalidad básica para todos, y mejoras progresivas para navegadores más capaces
+
 **WOFF/WOFF2**: Web Open Font Format - formatos optimizados para fuentes web
+
+**SSR (Server-Side Rendering)**: Renderizado del lado del servidor
+
+**SEO (Search Engine Optimization)**: Optimización para motores de búsqueda
