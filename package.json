@@ -26,5 +26,8 @@
   "scripts": {
     "build": "node src/scripts/build.js",
     "dev": "node src/scripts/dev.mjs"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   }
 }

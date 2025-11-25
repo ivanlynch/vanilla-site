@@ -266,6 +266,31 @@
 
 @layer components {
 
+  /* Utility Classes */
+  .font-display {
+    font-family: var(--ff-righteous);
+  }
+
+  .text-2xl {
+    font-size: var(--text-2xl);
+  }
+
+  .text-3xl {
+    font-size: var(--text-3xl);
+  }
+
+  .h-8 {
+    height: var(--spacing-8);
+  }
+
+  .leading-8 {
+    line-height: var(--spacing-8);
+  }
+
+  .text-accent-500 {
+    color: var(--color-accent-500);
+  }
+
   /* Header */
   header {
     position: sticky;
@@ -287,8 +312,9 @@
 
   header .logo {
     font-family: var(--ff-righteous);
-    font-size: var(--text-xl);
-    font-weight: var(--font-weight-bold);
+    font-size: var(--text-2xl);
+    height: var(--spacing-8);
+    line-height: var(--spacing-8);
     color: var(--color-fg);
   }
 
@@ -479,5 +505,12 @@
 
   section h2 {
     margin-bottom: var(--spacing-8);
+  }
+
+  /* Responsive Utilities */
+  @media (min-width: 64rem) {
+    .lg\:text-3xl {
+      font-size: var(--text-3xl);
+    }
   }
 }

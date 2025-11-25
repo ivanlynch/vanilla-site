@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { optimizeAllImages } = require('./optimize-images');
 
 const srcDir = path.join(__dirname, '..');
 const distDir = path.join(__dirname, '..', '..', 'dist');
@@ -87,7 +88,7 @@ function buildPage(templateContent, pageFile, outputFileName) {
 /**
  * Script principal de build
  */
-function build() {
+async function build() {
   console.log('🚀 Starting build process...\n');
 
   // Limpiar y crear directorio dist
@@ -126,6 +127,10 @@ function build() {
     }
   });
 
+  // Optimizar imágenes antes de copiar assets
+  console.log('\n');
+  await optimizeAllImages();
+
   // Copiar assets al directorio dist
   const assetsDir = path.join(srcDir, 'assets');
   if (fs.existsSync(assetsDir)) {
@@ -152,4 +157,7 @@ function build() {
 }
 
 // Ejecutar el build
-build();
+build().catch(error => {
+  console.error('❌ Build failed:', error);
+  process.exit(1);
+});

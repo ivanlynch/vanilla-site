@@ -217,6 +217,95 @@ Verifica que el placeholder en `src/index.html` coincida con el nombre del archi
 <!-- header -->             → No encontrará el archivo
 ```
 
+## 🖼️ Image Optimization
+
+El proyecto incluye un sistema automático de optimización de imágenes que genera versiones responsive en WebP y PNG.
+
+### Cómo Agregar Imágenes
+
+1. **Coloca la imagen original en** `src/assets/images/`:
+```bash
+src/assets/images/mi-foto.png
+```
+
+2. **Ejecuta el build:**
+```bash
+npm run build
+```
+
+3. **El sistema automáticamente genera** múltiples versiones optimizadas:
+```
+dist/assets/images/
+├── mi-foto-480.webp    (Mobile)
+├── mi-foto-480.png
+├── mi-foto-600.webp    (Tablet)
+├── mi-foto-600.png
+├── mi-foto-800.webp    (Desktop)
+├── mi-foto-800.png
+├── mi-foto-1601.webp   (Retina/High-DPI)
+└── mi-foto-1601.png
+```
+
+### Tamaños Generados
+
+El optimizador de imágenes va a leer el archivo styles.css buscando los breakpoints CSS existentes (`--breakpoint-*`) y va a generar múltiples versiones optimizadas:
+- **480px**: Para móviles (hasta 481px de ancho)
+- **600px**: Para tablets (hasta 601px de ancho)
+- **800px**: Para desktops
+- **1601px**: Para pantallas retina/high-DPI
+
+### Usando las imágenes optimizadas
+
+Una vez que el build generó las imágenes optimizadas, úsalas en tu HTML:
+
+```html
+<picture>
+  <source 
+    type="image/webp"
+    srcset="assets/images/mi-foto-480.webp 480w,
+            assets/images/mi-foto-600.webp 600w,
+            assets/images/mi-foto-800.webp 800w,
+            assets/images/mi-foto-1601.webp 1601w"
+    sizes="(max-width: 481px) 480px, (max-width: 601px) 600px, 800px">
+  <source 
+    type="image/png"
+    srcset="assets/images/mi-foto-480.png 480w,
+            assets/images/mi-foto-600.png 600w,
+            assets/images/mi-foto-800.png 800w,
+            assets/images/mi-foto-1601.png 1601w"
+    sizes="(max-width: 481px) 480px, (max-width: 601px) 600px, 800px">
+  <img src="assets/images/mi-foto-800.png" alt="Descripción">
+</picture>
+```
+
+### Beneficios
+
+- **WebP**: 70-80% más pequeño que PNG
+- **Responsive**: Solo descarga el tamaño necesario
+- **Fallback automático**: PNG para navegadores que no soportan WebP
+- **Optimización automática**: Calidad optimizada (WebP: 85%, PNG: 90%)
+
+### Verificar Optimización
+
+Después del build, verifica los ahorros en la consola:
+```bash
+npm run build
+
+# Salida esperada:
+🖼️  Processing: mi-foto.png (500.00 KB)
+   ✓ 480px: WebP 16.49 KB | PNG 58.42 KB (WebP saves 72%)
+   ✓ 600px: WebP 23.30 KB | PNG 87.19 KB (WebP saves 73%)
+   ✓ 800px: WebP 32.76 KB | PNG 139.95 KB (WebP saves 77%)
+   ✓ 1601px: WebP 87.54 KB | PNG 391.12 KB (WebP saves 78%)
+   💾 Total saved with WebP: 517.96 KB
+```
+
+### Tips
+
+- **Formato original**: Usa PNG o JPG de alta calidad
+- **Tamaño original**: Al menos 1600px de ancho para mejor calidad en retina
+- **Testing**: Usa DevTools → Network tab para verificar qué imagen se carga
+
 ## 📦 Deploy
 
 Para hacer deploy del sitio:

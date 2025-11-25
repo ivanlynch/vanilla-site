@@ -1,7 +1,19 @@
 <section class="hero">
     <div class="hero-container">
         <div class="hero-image">
-            <img src="assets/images/profile.png" alt="Ivan Lynch">
+            <picture>
+                <source type="image/webp" srcset="assets/images/profile-480.webp 480w,
+                            assets/images/profile-600.webp 600w,
+                            assets/images/profile-800.webp 800w,
+                            assets/images/profile-1601.webp 1601w"
+                    sizes="(max-width: 481px) 480px, (max-width: 601px) 600px, 800px">
+                <source type="image/png" srcset="assets/images/profile-480.png 480w,
+                            assets/images/profile-600.png 600w,
+                            assets/images/profile-800.png 800w,
+                            assets/images/profile-1601.png 1601w"
+                    sizes="(max-width: 481px) 480px, (max-width: 601px) 600px, 800px">
+                <img src="assets/images/profile-800.png" alt="Ivan Lynch">
+            </picture>
         </div>
         <div class="hero-content">
             <h1>Hey, I'm <span class="text-accent">Ivan</span> 👋</h1>
