@@ -14,7 +14,6 @@ function dev() {
         const filePath = path.join(distDir, req.url === '/' ? 'index.html' : req.url);
 
         // Get content type based on file extension
-
         const ext = path.extname(filePath);
         const contentTypes = {
             '.html': 'text/html',
@@ -23,6 +22,7 @@ function dev() {
             '.json': 'application/json',
             '.png': 'image/png',
             '.jpg': 'image/jpeg',
+            '.webp': 'image/webp',
             '.svg': 'image/svg+xml',
             '.woff': 'font/woff',
             '.woff2': 'font/woff2',
@@ -34,7 +34,24 @@ function dev() {
                 res.end('404 Not Found');
             } else {
                 const contentType = contentTypes[ext] || 'text/plain';
-                res.writeHead(200, { 'Content-Type': contentType });
+
+                // Set cache headers based on file type
+                const headers = { 'Content-Type': contentType };
+
+                // Immutable assets (fonts, images) - cache for 1 year
+                if (['.woff', '.woff2', '.png', '.jpg', '.jpeg', '.webp', '.svg', '.gif', '.ico'].includes(ext)) {
+                    headers['Cache-Control'] = 'public, max-age=31536000, immutable';
+                }
+                // CSS and JS - cache but revalidate
+                else if (['.css', '.js'].includes(ext)) {
+                    headers['Cache-Control'] = 'public, max-age=3600, must-revalidate';
+                }
+                // HTML - no cache (always fresh)
+                else if (ext === '.html') {
+                    headers['Cache-Control'] = 'no-cache';
+                }
+
+                res.writeHead(200, headers);
                 res.end(data);
             }
         });
