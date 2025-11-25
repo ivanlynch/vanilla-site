@@ -11,15 +11,11 @@ function readBreakpointsFromCSS() {
     const cssContent = fs.readFileSync(stylesPath, 'utf-8');
 
     // Extraer las variables de breakpoint del CSS
-    const breakpoints = {
-        sm: null,
-        md: null,
-        lg: null,
-        '2xl': null
-    };
+    const breakpoints = {};
 
     // Regex para encontrar --breakpoint-{size}: {value}px;
-    const breakpointRegex = /--breakpoint-(sm|md|lg|2xl):\s*(\d+)px;/g;
+    // Captura cualquier nombre de breakpoint
+    const breakpointRegex = /--breakpoint-([a-z0-9]+):\s*(\d+)px;/g;
     let match;
 
     while ((match = breakpointRegex.exec(cssContent)) !== null) {
@@ -27,22 +23,14 @@ function readBreakpointsFromCSS() {
         breakpoints[size] = parseInt(value, 10);
     }
 
-    // Mapear los breakpoints a tamaños de imagen
-    // Usamos valores ligeramente menores que los breakpoints para optimizar
-    const imageSizes = {
-        mobile: breakpoints.sm ? breakpoints.sm - 1 : 480,      // 480px (de 481px)
-        tablet: breakpoints.md ? breakpoints.md - 1 : 600,      // 600px (de 601px)
-        desktop: breakpoints.lg ? Math.round(breakpoints.lg * 1.04) : 800, // 800px (de 769px)
-        retina: breakpoints['2xl'] ? Math.round(breakpoints['2xl'] * 1.25) : 1600 // 1600px (de 1281px, x2 para retina)
-    };
-
     console.log('📐 Breakpoints detected from CSS:');
-    console.log(`   Mobile: ${imageSizes.mobile}px (from --breakpoint-sm: ${breakpoints.sm}px)`);
-    console.log(`   Tablet: ${imageSizes.tablet}px (from --breakpoint-md: ${breakpoints.md}px)`);
-    console.log(`   Desktop: ${imageSizes.desktop}px (from --breakpoint-lg: ${breakpoints.lg}px)`);
-    console.log(`   Retina: ${imageSizes.retina}px (from --breakpoint-2xl: ${breakpoints['2xl']}px)\n`);
 
-    return Object.values(imageSizes);
+    // Generar tamaños de imagen dinámicamente basados en los breakpoints encontrados
+    const sizes = Object.entries(breakpoints).map(([name, value]) => {
+        return value;
+    });
+
+    return sizes;
 }
 
 /**
@@ -60,26 +48,30 @@ async function optimizeImage(inputPath, outputDir, sizes) {
     for (const size of sizes) {
         // Generar versión WebP
         const webpOutput = path.join(outputDir, `${basename}-${size}.webp`);
-        await sharp(inputPath)
-            .resize(size, size, {
-                fit: 'cover',
-                position: 'center'
-            })
-            .webp({ quality: 85 })
-            .toFile(webpOutput);
+        if (!fs.existsSync(webpOutput)) {
+            await sharp(inputPath)
+                .resize(size, size, {
+                    fit: 'cover',
+                    position: 'center'
+                })
+                .webp({ quality: 85 })
+                .toFile(webpOutput);
+        }
 
         const webpStats = fs.statSync(webpOutput);
         const webpSizeKB = (webpStats.size / 1024).toFixed(2);
 
         // Generar versión PNG
         const pngOutput = path.join(outputDir, `${basename}-${size}.png`);
-        await sharp(inputPath)
-            .resize(size, size, {
-                fit: 'cover',
-                position: 'center'
-            })
-            .png({ quality: 90 })
-            .toFile(pngOutput);
+        if (!fs.existsSync(pngOutput)) {
+            await sharp(inputPath)
+                .resize(size, size, {
+                    fit: 'cover',
+                    position: 'center'
+                })
+                .png({ quality: 90 })
+                .toFile(pngOutput);
+        }
 
         const pngStats = fs.statSync(pngOutput);
         const pngSizeKB = (pngStats.size / 1024).toFixed(2);
@@ -101,9 +93,13 @@ async function optimizeAllImages() {
     console.log('🚀 Starting image optimization...\n');
 
     const srcImagesDir = path.join(__dirname, '..', 'assets', 'images');
+    const cacheImagesDir = path.join(__dirname, '..', '..', '.cache', 'images');
     const distImagesDir = path.join(__dirname, '..', '..', 'dist', 'assets', 'images');
 
-    // Crear directorio de salida si no existe
+    // Crear directorios si no existen
+    if (!fs.existsSync(cacheImagesDir)) {
+        fs.mkdirSync(cacheImagesDir, { recursive: true });
+    }
     if (!fs.existsSync(distImagesDir)) {
         fs.mkdirSync(distImagesDir, { recursive: true });
     }
@@ -122,10 +118,20 @@ async function optimizeAllImages() {
 
     console.log(`📦 Found ${imageFiles.length} image(s) to optimize\n`);
 
-    // Procesar cada imagen
+    // Procesar cada imagen (generar en caché)
     for (const file of imageFiles) {
         const inputPath = path.join(srcImagesDir, file);
-        await optimizeImage(inputPath, distImagesDir, sizes);
+        await optimizeImage(inputPath, cacheImagesDir, sizes);
+    }
+
+    // Copiar imágenes desde caché a dist
+    console.log('📋 Copying optimized images to dist...');
+    const optimizedFiles = fs.readdirSync(cacheImagesDir);
+    for (const file of optimizedFiles) {
+        fs.copyFileSync(
+            path.join(cacheImagesDir, file),
+            path.join(distImagesDir, file)
+        );
     }
 
     console.log('\n✨ Image optimization completed!\n');

@@ -1,0 +1,12 @@
+{
+    "watch": [
+        "src"
+    ],
+    "ext": "js,ts,html,css",
+    "exec": "npm run build && node ./src/scripts/dev.mjs",
+    "delay": "300ms",
+    "ignore": [
+        "node_modules/**/*",
+        "dist"
+    ]
+}

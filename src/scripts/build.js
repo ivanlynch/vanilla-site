@@ -139,11 +139,19 @@ async function build() {
     console.log('\n📦 Copied assets directory');
   }
 
-  // Copiar styles.css
+  // Copiar y minificar styles.css
   const stylesPath = path.join(srcDir, 'styles.css');
   if (fs.existsSync(stylesPath)) {
-    fs.copyFileSync(stylesPath, path.join(distDir, 'styles.css'));
-    console.log('📦 Copied styles.css');
+    let cssContent = fs.readFileSync(stylesPath, 'utf-8');
+    // Minificación simple: eliminar comentarios y espacios innecesarios
+    cssContent = cssContent
+      .replace(/\/\*[\s\S]*?\*\//g, '') // Eliminar comentarios
+      .replace(/\s+/g, ' ') // Colapsar espacios
+      .replace(/\s*([{}:;,])\s*/g, '$1') // Eliminar espacios alrededor de caracteres especiales
+      .trim();
+
+    fs.writeFileSync(path.join(distDir, 'styles.css'), cssContent);
+    console.log('📦 Copied and minified styles.css');
   }
 
   // Copiar index.js si existe
