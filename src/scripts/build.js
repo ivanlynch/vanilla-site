@@ -1,6 +1,49 @@
 const fs = require('fs');
 const path = require('path');
 const { optimizeAllImages } = require('./optimize-images');
+const postcss = require('postcss');
+const cssnano = require('cssnano');
+
+/**
+ * Minifica CSS usando cssnano
+ */
+async function minifyCSS(cssContent) {
+  try {
+    const result = await postcss([
+      cssnano({
+        preset: ['default', {
+          discardComments: { removeAll: true },
+          normalizeWhitespace: true
+        }]
+      })
+    ]).process(cssContent, { from: undefined });
+
+    return result.css;
+  } catch (error) {
+    console.error('Error minifying CSS:', error.message);
+    return cssContent; // Retornar CSS original si falla la minificación
+  }
+}
+
+/**
+ * Inyecta CSS minificado en el tag <style> inline del HTML
+ */
+function injectInlineCSS(html, minifiedCSS) {
+  // Buscar el tag <style> que contiene el comentario de CSS crítico
+  const styleRegex = /(<style>)([\s\S]*?)(<\/style>)/;
+
+  const match = html.match(styleRegex);
+  if (!match) {
+    console.warn('  ⚠ Warning: Could not find <style> tag for CSS injection');
+    return html;
+  }
+
+  // Reemplazar el contenido del tag <style> con el CSS minificado
+  const injectedHTML = html.replace(styleRegex, `$1${minifiedCSS}$3`);
+
+  console.log('  ✓ Injected minified CSS into <style> tag');
+  return injectedHTML;
+}
 
 const srcDir = path.join(__dirname, '..');
 const distDir = path.join(__dirname, '..', '..', 'dist');
@@ -67,7 +110,7 @@ function copyDirectory(src, dest, exclude = []) {
 /**
  * Construye una página HTML completa
  */
-function buildPage(templateContent, pageFile, outputFileName) {
+function buildPage(templateContent, pageFile, outputFileName, minifiedCSS = '') {
   console.log(`\nBuilding ${outputFileName}...`);
 
   // Reemplazar el placeholder de la página con su contenido
@@ -78,6 +121,11 @@ function buildPage(templateContent, pageFile, outputFileName) {
 
   // Reemplazar todos los placeholders con el contenido real
   html = replaceComponents(html);
+
+  // Inyectar CSS minificado en el tag <style> inline
+  if (minifiedCSS) {
+    html = injectInlineCSS(html, minifiedCSS);
+  }
 
   // Escribir el archivo de salida
   const outputPath = path.join(distDir, outputFileName);
@@ -107,6 +155,19 @@ async function build() {
     process.exit(1);
   }
 
+  // Leer y minificar styles.css ANTES de construir páginas
+  console.log('\n📦 Processing styles.css...');
+  const stylesPath = path.join(srcDir, 'styles.css');
+  let minifiedCSS = '';
+
+  if (fs.existsSync(stylesPath)) {
+    const cssContent = fs.readFileSync(stylesPath, 'utf-8');
+    minifiedCSS = await minifyCSS(cssContent);
+    console.log(`✓ Minified CSS from ${cssContent.length} to ${minifiedCSS.length} bytes`);
+  } else {
+    console.warn('⚠ Warning: styles.css not found');
+  }
+
   // Obtener todas las páginas en src/pages/
   const pagesDir = path.join(srcDir, 'pages');
   let pages = [];
@@ -117,13 +178,13 @@ async function build() {
       .map(file => file.replace('.html', ''));
   }
 
-  // Generar index.html (página home)
-  buildPage(templateContent, 'home', 'index.html');
+  // Generar index.html (página home) con CSS minificado inyectado
+  buildPage(templateContent, 'home', 'index.html', minifiedCSS);
 
   // Generar una página por cada archivo en src/pages/ (excepto home)
   pages.forEach(pageName => {
     if (pageName !== 'home') {
-      buildPage(templateContent, pageName, `${pageName}.html`);
+      buildPage(templateContent, pageName, `${pageName}.html`, minifiedCSS);
     }
   });
 
@@ -139,19 +200,10 @@ async function build() {
     console.log('\n📦 Copied assets directory');
   }
 
-  // Copiar y minificar styles.css
-  const stylesPath = path.join(srcDir, 'styles.css');
-  if (fs.existsSync(stylesPath)) {
-    let cssContent = fs.readFileSync(stylesPath, 'utf-8');
-    // Minificación simple: eliminar comentarios y espacios innecesarios
-    cssContent = cssContent
-      .replace(/\/\*[\s\S]*?\*\//g, '') // Eliminar comentarios
-      .replace(/\s+/g, ' ') // Colapsar espacios
-      .replace(/\s*([{}:;,])\s*/g, '$1') // Eliminar espacios alrededor de caracteres especiales
-      .trim();
-
-    fs.writeFileSync(path.join(distDir, 'styles.css'), cssContent);
-    console.log('📦 Copied and minified styles.css');
+  // Copiar styles.css minificado (para carga asíncrona)
+  if (minifiedCSS) {
+    fs.writeFileSync(path.join(distDir, 'styles.css'), minifiedCSS);
+    console.log('📦 Copied minified styles.css');
   }
 
   // Copiar index.js si existe

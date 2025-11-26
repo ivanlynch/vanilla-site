@@ -1,29 +1,9 @@
 @font-face {
   font-family: 'Righteous';
-  src: url('assets/fonts/Righteous-Regular.woff2') format('woff2'),
-    url('assets/fonts/Righteous-Regular.woff') format('woff');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
+  src: url('/assets/fonts/Righteous-Regular.woff2') format('woff2'),
+    url('/assets/fonts/Righteous-Regular.woff') format('woff');
 }
 
-@font-face {
-  font-family: 'Merriweather Sans';
-  src: url('assets/fonts/Merriweather-Regular.woff2') format('woff2'),
-    url('assets/fonts/Merriweather-Regular.woff') format('woff');
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: 'Merriweather Sans';
-  src: url('assets/fonts/Merriweather-Bold.woff2') format('woff2'),
-    url('assets/fonts/Merriweather-Bold.woff') format('woff');
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
 
 
 @layer reset {
@@ -125,8 +105,8 @@
 
     /* Typography */
     --ff-righteous: "Righteous", sans-serif;
-    --ff-heading: "Merriweather Sans", sans-serif;
-    --ff-body: "Merriweather Sans", sans-serif;
+    --ff-heading: sans-serif;
+    --ff-body: serif;
 
     /* Font Sizes */
     --text-sm: 0.875rem;
@@ -329,6 +309,7 @@
     transition: color var(--transition-duration) var(--transition-timing);
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    font-family: var(--ff-heading);
   }
 
   nav a:hover {

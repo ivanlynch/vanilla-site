@@ -2,6 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import zlib from 'zlib';
 
 // Get __dirname equivalent in ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -51,14 +52,32 @@ function dev() {
                     headers['Cache-Control'] = 'no-cache';
                 }
 
-                res.writeHead(200, headers);
-                res.end(data);
+                // Compress text-based responses with gzip
+                const acceptEncoding = req.headers['accept-encoding'] || '';
+                const shouldCompress = ['.html', '.css', '.js', '.json', '.svg'].includes(ext);
+
+                if (shouldCompress && acceptEncoding.includes('gzip')) {
+                    headers['Content-Encoding'] = 'gzip';
+                    res.writeHead(200, headers);
+
+                    zlib.gzip(data, (err, compressed) => {
+                        if (err) {
+                            console.error('Compression error:', err);
+                            res.end(data);
+                        } else {
+                            res.end(compressed);
+                        }
+                    });
+                } else {
+                    res.writeHead(200, headers);
+                    res.end(data);
+                }
             }
         });
     });
 
     server.listen(3000, () => {
-        console.log('🚀 Dev server started');
+        console.log('🚀 Dev server started with gzip compression');
         console.log('📡 Server running at http://localhost:3000');
     });
 }
