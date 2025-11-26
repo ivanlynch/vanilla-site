@@ -24,13 +24,14 @@
     "doc": "docs"
   },
   "scripts": {
-    "build": "node src/scripts/build.js",
-    "dev": "nodemon"
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview"
   },
   "devDependencies": {
     "cssnano": "^7.1.2",
-    "nodemon": "^3.1.11",
     "postcss": "^8.5.6",
-    "sharp": "^0.34.5"
+    "sharp": "^0.34.5",
+    "vite": "^7.2.4"
   }
 }
