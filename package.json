@@ -24,6 +24,8 @@
     "doc": "docs"
   },
   "scripts": {
+    "optimize:images": "node scripts/optimize-images.js",
+    "prebuild": "npm run optimize:images",
     "build": "vite build",
     "dev": "vite",
     "preview": "vite preview"

@@ -7,7 +7,7 @@ const sharp = require('sharp');
  * Lee las variables CSS --breakpoint-* y retorna los tamaños de imagen a generar
  */
 function readBreakpointsFromCSS() {
-    const stylesPath = path.join(__dirname, '..', 'styles.css');
+    const stylesPath = path.join(__dirname, '..', 'src', 'styles.css');
     const cssContent = fs.readFileSync(stylesPath, 'utf-8');
 
     // Extraer las variables de breakpoint del CSS
@@ -92,16 +92,16 @@ async function optimizeImage(inputPath, outputDir, sizes) {
 async function optimizeAllImages() {
     console.log('🚀 Starting image optimization...\n');
 
-    const srcImagesDir = path.join(__dirname, '..', 'assets', 'images');
-    const cacheImagesDir = path.join(__dirname, '..', '..', '.cache', 'images');
-    const distImagesDir = path.join(__dirname, '..', '..', 'dist', 'assets', 'images');
+    const srcImagesDir = path.join(__dirname, '..', 'src', 'assets', 'images');
+    const cacheImagesDir = path.join(__dirname, '..', '.cache', 'images');
+    const publicImagesDir = path.join(__dirname, '..', 'src', 'public', 'assets', 'images');
 
     // Crear directorios si no existen
     if (!fs.existsSync(cacheImagesDir)) {
         fs.mkdirSync(cacheImagesDir, { recursive: true });
     }
-    if (!fs.existsSync(distImagesDir)) {
-        fs.mkdirSync(distImagesDir, { recursive: true });
+    if (!fs.existsSync(publicImagesDir)) {
+        fs.mkdirSync(publicImagesDir, { recursive: true });
     }
 
     // Leer breakpoints del CSS
@@ -124,13 +124,13 @@ async function optimizeAllImages() {
         await optimizeImage(inputPath, cacheImagesDir, sizes);
     }
 
-    // Copiar imágenes desde caché a dist
-    console.log('📋 Copying optimized images to dist...');
+    // Copiar imágenes desde caché a public (Vite las copiará a dist)
+    console.log('📋 Copying optimized images to public...');
     const optimizedFiles = fs.readdirSync(cacheImagesDir);
     for (const file of optimizedFiles) {
         fs.copyFileSync(
             path.join(cacheImagesDir, file),
-            path.join(distImagesDir, file)
+            path.join(publicImagesDir, file)
         );
     }
 
