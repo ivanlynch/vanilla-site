@@ -1,10 +1,8 @@
 @font-face {
   font-family: 'Righteous';
-  src: url('/assets/fonts/Righteous-Regular.woff2') format('woff2'),
-    url('/assets/fonts/Righteous-Regular.woff') format('woff');
+  src: url('./assets/fonts/Righteous-Regular.woff2') format('woff2'),
+    url('./assets/fonts/Righteous-Regular.woff') format('woff');
 }
-
-
 
 @layer reset {
 
@@ -94,7 +92,10 @@
   }
 
 
-
+  /* View Transitions */
+  @view-transition {
+    navigation: auto;
+  }
 }
 
 @layer base {
@@ -208,9 +209,6 @@
 }
 
 @layer base {
-  @view-transition {
-    navigation: auto;
-  }
 
   body {
     font-family: var(--ff-body);
