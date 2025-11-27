@@ -262,9 +262,7 @@
     font-size: var(--text-2xl);
   }
 
-  .text-3xl {
-    font-size: var(--text-3xl);
-  }
+
 
   .h-8 {
     height: var(--spacing-8);
@@ -297,13 +295,7 @@
     align-items: center;
   }
 
-  header .logo {
-    font-family: var(--ff-righteous);
-    font-size: var(--text-2xl);
-    height: var(--spacing-8);
-    line-height: var(--spacing-8);
-    color: var(--color-fg);
-  }
+
 
   nav ul {
     display: flex;
