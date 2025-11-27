@@ -94,7 +94,7 @@ async function optimizeAllImages() {
 
     const srcImagesDir = path.join(__dirname, '..', 'src', 'assets', 'images');
     const cacheImagesDir = path.join(__dirname, '..', '.cache', 'images');
-    const publicImagesDir = path.join(__dirname, '..', 'src', 'public', 'assets', 'images');
+    const publicImagesDir = path.join(__dirname, '..', 'src', 'pages', 'public', 'assets', 'images');
 
     // Crear directorios si no existen
     if (!fs.existsSync(cacheImagesDir)) {
