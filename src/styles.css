@@ -473,9 +473,15 @@
   }
 
   .footer .logo {
-    font-family: var(--ff-righteous);
-    font-size: var(--text-lg);
+    display: inline-block;
+    text-decoration: none;
+    color: var(--color-fg);
     margin-bottom: var(--spacing-4);
+    transition: color var(--transition-duration) var(--transition-timing);
+  }
+
+  .footer .logo:hover {
+    color: var(--color-fg);
   }
 
   .footer .social-links {
