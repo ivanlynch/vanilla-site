@@ -372,8 +372,15 @@
   }
 
   .hero h1 {
-    font-size: clamp(var(--text-xl), 5vw, var(--text-3xl));
+    font-size: var(--text-lg);
     margin: 0 0 var(--spacing-4) 0;
+  }
+
+  /* Tablet and up - use next step in scale */
+  @media (min-width: 601px) {
+    .hero h1 {
+      font-size: var(--text-xl);
+    }
   }
 
   .hero h1 .text-accent {
@@ -411,29 +418,37 @@
     .hero-container {
       flex-direction: row;
       gap: var(--spacing-16);
+      max-width: none;
     }
 
     .hero-image {
       width: 50%;
       order: 2;
+      flex-shrink: 0;
       /* Image on the right */
     }
 
     .hero-content {
       width: 50%;
       order: 1;
+      flex: 1;
+      min-width: 0;
       /* Text on the left */
       align-items: flex-start;
       text-align: left;
     }
 
-    .hero h1,
+    .hero h1 {
+      text-align: left;
+    }
+
     .hero-container h2 {
       text-align: left;
     }
 
     .hero-container h3 {
       text-align: left;
+      max-width: none;
     }
   }
 
