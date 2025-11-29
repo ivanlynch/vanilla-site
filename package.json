@@ -28,6 +28,7 @@
     "dev": "node --watch scripts/server.mjs"
   },
   "devDependencies": {
+    "compression": "^1.8.1",
     "cssnano": "^7.1.2",
     "express": "^5.1.0",
     "postcss": "^8.5.6",
