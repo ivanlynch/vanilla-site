@@ -2,10 +2,8 @@ import fs from "fs";
 import path from "path";
 import sharp from "sharp";
 import { fileURLToPath } from "url";
-import uncss from "uncss";
-import { promisify } from "util";
-
-const uncssAsync = promisify(uncss);
+import postcss from "postcss";
+import { purgeCSSPlugin } from "@fullhuman/postcss-purgecss";
 
 /**
  * Parsea los breakpoints de CSS del archivo styles.css
@@ -98,24 +96,36 @@ async function optimizeImage(inputPath, outputDir, sizes) {
 
 /**
  * Esta función lee el archivo css y retorna solo el css que es usado en el html
- * Usa la librería uncss para analizar el HTML y filtrar el CSS
+ * Usa PurgeCSS para analizar el HTML y filtrar el CSS no utilizado
  */
 async function extractOnlyUserCSSForHTML(cssFile, htmlFile) {
   const cssContent = fs.readFileSync(cssFile, "utf-8");
   const htmlContent = fs.readFileSync(htmlFile, "utf-8");
 
-  const options = {
-    raw: cssContent,
-    banner: false,
-    ignoreSheets: [/./], // Ignorar hojas de estilo linkeadas en el HTML, solo procesar el raw
-  };
-
   try {
-    // Pasamos el contenido HTML directamente para evitar errores de fetch en jsdom
-    const output = await uncssAsync([htmlContent], options);
-    return output;
+    const result = await postcss([
+      purgeCSSPlugin({
+        content: [{ raw: htmlContent, extension: "html" }],
+        defaultExtractor: (content) => {
+          // Extraer clases, IDs, tags y atributos del HTML
+          const broadMatches = content.match(/[^<>"'`\s]*[^<>"'`\s:]/g) || [];
+          const innerMatches =
+            content.match(/[^<>"'`\s.()]*[^<>"'`\s.():]/g) || [];
+          return broadMatches.concat(innerMatches);
+        },
+        // Mantener reglas CSS importantes que podrían no estar en el HTML
+        safelist: {
+          // Mantener todas las variables CSS (--*)
+          greedy: [/^--/],
+          // Mantener @font-face, @keyframes, etc.
+          standard: [/^@/, /^:root/, /^html/, /^body/],
+        },
+      }),
+    ]).process(cssContent, { from: cssFile });
+
+    return result.css;
   } catch (error) {
-    console.error("Error running uncss:", error);
+    console.error("Error running PurgeCSS:", error);
     throw error;
   }
 }
