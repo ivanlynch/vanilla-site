@@ -24,16 +24,14 @@
     "doc": "docs"
   },
   "scripts": {
-    "optimize:images": "node scripts/optimize-images.js",
-    "prebuild": "npm run optimize:images",
-    "build": "vite build",
-    "dev": "vite",
-    "preview": "vite preview"
+    "build": "node scripts/build.mjs",
+    "dev": "node --watch scripts/server.mjs"
   },
   "devDependencies": {
     "cssnano": "^7.1.2",
+    "express": "^5.1.0",
     "postcss": "^8.5.6",
     "sharp": "^0.34.5",
-    "vite": "^7.2.4"
+    "uncss": "^0.17.3"
   }
 }

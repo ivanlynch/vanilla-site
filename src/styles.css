@@ -1,11 +1,10 @@
 @font-face {
-  font-family: 'Righteous';
-  src: url('./assets/fonts/Righteous-Regular.woff2') format('woff2'),
-    url('./assets/fonts/Righteous-Regular.woff') format('woff');
+  font-family: "Righteous";
+  src: url("./assets/fonts/Righteous-Regular.woff2") format("woff2");
+  font-display: swap;
 }
 
 @layer reset {
-
   *,
   *::before,
   *::after {
@@ -91,7 +90,6 @@
     color: var(--color-accent-600);
   }
 
-
   /* View Transitions */
   @view-transition {
     navigation: auto;
@@ -106,10 +104,10 @@
     --color-accent-500: #ff6b6b;
     --color-accent-600: #ff5757;
     --color-gray-200: #e5e7eb;
-    --color-gray-300: oklch(87.2% .01 258.338);
-    --color-gray-400: oklch(70.7% .022 261.325);
-    --color-gray-800: oklch(27.8% .033 256.848);
-    --color-gray-900: oklch(21% .034 264.665);
+    --color-gray-300: oklch(87.2% 0.01 258.338);
+    --color-gray-400: oklch(70.7% 0.022 261.325);
+    --color-gray-800: oklch(27.8% 0.033 256.848);
+    --color-gray-900: oklch(21% 0.034 264.665);
     --color-white: #fff;
     --color-black: #000;
 
@@ -209,7 +207,6 @@
 }
 
 @layer base {
-
   body {
     font-family: var(--ff-body);
     font-size: var(--text-base);
@@ -252,7 +249,6 @@
 }
 
 @layer components {
-
   /* Utility Classes */
   .font-display {
     font-family: var(--ff-righteous);
@@ -261,8 +257,6 @@
   .text-2xl {
     font-size: var(--text-2xl);
   }
-
-
 
   .h-8 {
     height: var(--spacing-8);
@@ -294,8 +288,6 @@
     justify-content: space-between;
     align-items: center;
   }
-
-
 
   nav ul {
     display: flex;
