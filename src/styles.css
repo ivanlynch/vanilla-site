@@ -295,16 +295,35 @@
   }
 
   nav a {
-    color: var(--color-gray-300);
-    font-size: var(--text-sm);
-    transition: color var(--transition-duration) var(--transition-timing);
+    color: var(--color-gray-400);
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-bold);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.1em;
     font-family: var(--ff-heading);
+    position: relative;
+    padding-block: var(--spacing-1);
+    text-decoration: none;
+    transition: color 0.3s var(--transition-timing);
+  }
+
+  nav a::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background-color: var(--color-accent-500);
+    width: 0;
+    transition: width 0.3s var(--transition-timing);
   }
 
   nav a:hover {
     color: var(--color-accent-500);
+  }
+
+  nav a:hover::after {
+    width: 100%;
   }
 
   /* Main Layout */
