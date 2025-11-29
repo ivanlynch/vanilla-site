@@ -4,6 +4,7 @@ import fs from "fs";
 import * as Utils from "./utils.mjs";
 import postcss from "postcss";
 import cssnano from "cssnano";
+import { minify } from "html-minifier-terser";
 
 export default async function build() {
   const currentFilePath = fileURLToPath(import.meta.url);
@@ -39,8 +40,14 @@ export default async function build() {
       path.join(pagesDir, file)
     );
     const minifiedCss = await minifyCss(optimizedCss);
-    await injectInlineCSS(path.join(distDir, file), minifiedCss);
-    await removeStylesheetsFromHTML(path.join(distDir, file));
+    const htmlFilePath = path.join(distDir, file);
+
+    await injectInlineCSS(htmlFilePath, minifiedCss);
+    await removeStylesheetsFromHTML(htmlFilePath);
+
+    const htmlContent = fs.readFileSync(htmlFilePath, "utf-8");
+    const minifiedHTML = await minifyHTML(htmlContent);
+    fs.writeFileSync(htmlFilePath, minifiedHTML);
   }
 
   console.log("✨ CSS optimization completed!");
@@ -159,6 +166,24 @@ async function minifyCss(cssCode) {
     }),
   ]).process(cssCode, { from: undefined });
   return result.css;
+}
+
+async function minifyHTML(htmlContent) {
+  return await minify(htmlContent, {
+    collapseWhitespace: true,
+    removeComments: true,
+    removeRedundantAttributes: true,
+    removeScriptTypeAttributes: true,
+    removeStyleLinkTypeAttributes: true,
+    useShortDoctype: true,
+    minifyCSS: false,
+    minifyJS: false,
+    caseSensitive: false,
+    conservativeCollapse: false,
+    removeAttributeQuotes: false,
+    removeEmptyAttributes: true,
+    removeOptionalTags: false,
+  });
 }
 
 async function injectInlineCSS(htmlFile, cssCode) {
