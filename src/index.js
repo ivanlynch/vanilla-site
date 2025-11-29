@@ -1,1 +1,1 @@
-const nueva = "Variable"
+const nueva = "Variable";
