@@ -9,6 +9,11 @@ Hoy en día, las diferentes implementaciones de JavaScript en los browsers (Spid
 
 ## ¿Qué tecnologías usa este proyecto?
 
-- HTML
-- CSS
-- JavaScript
+- **HTML5**: Estructura semántica con componentes reutilizables
+- **CSS3**: Con CSS Layers, Custom Properties y optimización automática
+- **JavaScript**: Vanilla JS puro, sin frameworks
+- **Build Tools**: 
+  - PurgeCSS para optimización de CSS
+  - html-minifier-terser para minificación de HTML
+  - sharp para optimización de imágenes responsive
+  - File watching para desarrollo con reconstrucción automática

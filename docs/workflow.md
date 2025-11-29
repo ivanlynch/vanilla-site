@@ -5,6 +5,7 @@ Esta guía describe el flujo de trabajo de desarrollo para el proyecto **vanilla
 ## 🚀 Quick Start
 
 ### Instalación
+
 ```bash
 # Clonar el repositorio
 git clone https://github.com/ivanlynch/vanilla-site.git
@@ -27,7 +28,9 @@ npm run dev
 ## 📂 Estructura de Trabajo
 
 ### Directorio `src/`
+
 Aquí trabajas en el código fuente:
+
 - `src/components/` - Componentes HTML reutilizables (header, footer)
 - `src/pages/` - Contenido de páginas individuales
 - `src/styles.css` - Estilos globales
@@ -35,6 +38,7 @@ Aquí trabajas en el código fuente:
 - `src/assets/` - Recursos estáticos (fuentes, imágenes, favicon)
 
 ### Directorio `dist/`
+
 **No editar manualmente**. Este directorio se genera automáticamente con `npm run build`.
 
 ## 🔨 Flujo de Desarrollo
@@ -42,6 +46,7 @@ Aquí trabajas en el código fuente:
 ### 1. Editar Componentes o Páginas
 
 **Para modificar componentes comunes:**
+
 ```bash
 # Editar header de todas las páginas
 src/components/header.html
@@ -51,6 +56,7 @@ src/components/footer.html
 ```
 
 **Para modificar contenido de páginas:**
+
 ```bash
 # Editar página home
 src/pages/home.html
@@ -62,11 +68,13 @@ src/pages/about.html
 ### 2. Editar Estilos
 
 Todos los estilos están en:
+
 ```bash
 src/styles.css
 ```
 
 El archivo usa **CSS Layers** para organización:
+
 - `@layer reset` - Reset CSS
 - `@layer base` - Variables y estilos base
 - `@layer components` - Componentes específicos
@@ -74,26 +82,112 @@ El archivo usa **CSS Layers** para organización:
 ### 3. Build del Sitio
 
 Después de hacer cambios, ejecuta el build:
+
 ```bash
 npm run build
 ```
 
-Este comando:
+Este comando realiza un proceso de optimización completo:
+
 1. Limpia el directorio `dist/`
-2. Lee el template `src/index.html`
-3. Reemplaza placeholders `<!-- components/header -->` con el contenido real
-4. Genera archivos HTML completos en `dist/`
-5. Copia assets, CSS y JS a `dist/`
+2. Copia páginas y assets a `dist/`
+3. Optimiza imágenes generando versiones responsive en WebP y PNG
+4. **Optimiza CSS** usando PurgeCSS para eliminar estilos no utilizados
+5. **Inyecta CSS inline** en cada página HTML (eliminando archivos CSS externos)
+6. **Minifica HTML** para reducir el tamaño de los archivos
+7. **Minifica CSS** usando cssnano
+
+#### Diagrama de Secuencia del Proceso de Build
+
+El siguiente diagrama muestra el flujo detallado de ejecución cuando se ejecuta `npm run build`:
+
+```mermaid
+sequenceDiagram
+    participant User as Usuario
+    participant NPM as npm
+    participant Build as build.mjs
+    participant FS as FileSystem
+    participant Utils as utils.mjs
+    participant PurgeCSS as PurgeCSS
+    participant CSSNano as cssnano
+    participant Sharp as sharp
+    participant HTMLMin as html-minifier
+
+    User->>NPM: npm run build
+    NPM->>Build: Ejecuta build.mjs
+
+    Note over Build: Inicialización
+    Build->>Build: Obtiene rutas de directorios
+    Build->>FS: Verifica si existe dist/
+    alt dist/ existe
+        Build->>FS: Elimina dist/ recursivamente
+    end
+    Build->>FS: Crea directorio dist/
+
+    Note over Build: Copia de archivos
+    Build->>FS: Copia src/pages/ → dist/
+    Build->>FS: Copia src/assets/ → dist/assets/
+
+    Note over Build: Optimización de imágenes
+    Build->>Utils: readBreakpointsFromCSS()
+    Utils->>FS: Lee src/styles.css
+    Utils-->>Build: Retorna breakpoints
+
+    Build->>FS: Lista imágenes en src/assets/images/
+    Build->>FS: Limpia caché de imágenes huérfanas
+
+    loop Para cada imagen
+        Build->>Utils: optimizeImage(imagen, sizes)
+        Utils->>Sharp: Genera WebP (varios tamaños)
+        Utils->>Sharp: Genera PNG (varios tamaños)
+        Sharp-->>Utils: Imágenes optimizadas
+        Utils->>FS: Guarda en .cache/images/
+    end
+
+    Build->>FS: Copia imágenes optimizadas a dist/assets/images/
+
+    Note over Build: Optimización CSS y HTML
+    Build->>FS: Lista archivos HTML en dist/
+
+    loop Para cada página HTML
+        Build->>Utils: extractOnlyUserCSSForHTML(css, html)
+        Utils->>FS: Lee src/styles.css
+        Utils->>FS: Lee archivo HTML
+        Utils->>PurgeCSS: Analiza HTML y filtra CSS
+        PurgeCSS-->>Utils: CSS usado solamente
+        Utils-->>Build: CSS optimizado
+
+        Build->>CSSNano: minifyCss(css)
+        CSSNano-->>Build: CSS minificado
+
+        Build->>FS: Lee archivo HTML de dist/
+        Build->>Build: injectInlineCSS(html, css)
+        Build->>FS: Escribe HTML con CSS inline
+
+        Build->>Build: removeStylesheetsFromHTML(html)
+        Build->>FS: Escribe HTML sin <link> stylesheet
+
+        Build->>FS: Lee HTML actualizado
+        Build->>HTMLMin: minifyHTML(html)
+        HTMLMin-->>Build: HTML minificado
+        Build->>FS: Escribe HTML final minificado
+    end
+
+    Build-->>NPM: Build completado
+    NPM-->>User: ✅ Proceso finalizado
+```
 
 **Salida:**
+
 ```
 dist/
-├── index.html       # Home page
-├── about.html       # About page
-├── styles.css       # Estilos
+├── index.html       # Home page (con CSS inline y minificado)
+├── about.html       # About page (con CSS inline y minificado)
 ├── index.js         # JavaScript
-└── assets/          # Assets copiados
+└── assets/          # Assets copiados e imágenes optimizadas
 ```
+
+**Nota importante:** El CSS ya no se genera como archivo separado. Cada página HTML contiene su CSS optimizado inline, lo que mejora el rendimiento al eliminar una petición HTTP adicional.
 
 ### 4. Preview Local
 
@@ -101,13 +195,26 @@ dist/
 npm run dev
 ```
 
-Esto inicia un servidor local en **http://localhost:3000** sirviendo los archivos de `dist/`.
+Esto inicia un servidor de desarrollo con las siguientes características:
 
-**Importante:** Siempre ejecuta `npm run build` antes de `npm run dev` para ver tus cambios más recientes.
+- **Servidor HTTP** en **http://localhost:3000** sirviendo los archivos de `dist/`
+- **File watching automático**: Observa cambios en `src/` y reconstruye automáticamente
+- **Compression middleware**: Comprime las respuestas HTTP para mejor rendimiento
+- **Build inicial**: Ejecuta un build automático al iniciar
+
+**Flujo de trabajo mejorado:**
+
+1. Ejecuta `npm run dev` una vez
+2. Edita archivos en `src/`
+3. El servidor detecta los cambios automáticamente
+4. Reconstruye el proyecto y recarga en el navegador
+
+**Nota:** El servidor usa `--watch` de Node.js para detectar cambios en los scripts, y un watcher personalizado para detectar cambios en `src/`.
 
 ## 📝 Crear una Nueva Página
 
 ### 1. Crear el archivo de contenido
+
 ```bash
 src/pages/mi-nueva-pagina.html
 ```
@@ -120,17 +227,20 @@ src/pages/mi-nueva-pagina.html
 ```
 
 ### 2. Ejecutar build
+
 ```bash
 npm run build
 ```
 
 El build script automáticamente:
+
 - Detecta el nuevo archivo en `src/pages/`
 - Genera `dist/mi-nueva-pagina.html` con header y footer incluidos
 
 ### 3. Actualizar navegación (opcional)
 
 Si quieres agregar la página al menú de navegación:
+
 ```bash
 src/components/header.html
 ```
@@ -150,6 +260,7 @@ src/components/header.html
 ### Variables CSS
 
 Las variables globales están en `src/styles.css` dentro de `:root`:
+
 ```css
 :root {
   --color-bg: #0a0a0a;
@@ -162,6 +273,7 @@ Las variables globales están en `src/styles.css` dentro de `:root`:
 ### Agregar Estilos de Componente
 
 Agrega estilos dentro del `@layer components`:
+
 ```css
 @layer components {
   .mi-componente {
@@ -175,6 +287,16 @@ Agrega estilos dentro del `@layer components`:
 
 ### Verificar Cambios
 
+**Con file watching (recomendado):**
+
+1. Ejecuta `npm run dev` (se construye automáticamente)
+2. Haz tus cambios en `src/`
+3. El servidor detecta cambios y reconstruye automáticamente
+4. Recarga el navegador en http://localhost:3000
+5. Verifica los cambios
+
+**Sin file watching:**
+
 1. Haz tus cambios en `src/`
 2. Ejecuta `npm run build`
 3. Ejecuta `npm run dev`
@@ -183,13 +305,19 @@ Agrega estilos dentro del `@layer components`:
 
 ### Verificar HTML Generado
 
-Revisa los archivos en `dist/` para asegurarte de que los componentes se inyectaron correctamente.
+Revisa los archivos en `dist/` para asegurarte de que:
+
+- Los componentes se inyectaron correctamente
+- El CSS está inline (dentro de `<style>` tags)
+- El HTML está minificado
+- Las imágenes optimizadas están en `dist/assets/images/`
 
 ## 🔧 Tips & Troubleshooting
 
 ### El servidor dev no inicia (EADDRINUSE)
 
 El puerto 3000 ya está ocupado. Termina el proceso anterior:
+
 ```bash
 # Windows
 netstat -ano | findstr :3000
@@ -200,7 +328,15 @@ taskkill /PID <process_id> /F
 
 ### Los cambios no se reflejan
 
-Recuerda siempre ejecutar `npm run build` antes de `npm run dev`:
+**Con file watching:**
+
+- El servidor debería detectar cambios automáticamente
+- Si no detecta cambios, verifica que el archivo esté en `src/`
+- Recarga el navegador después de que veas el mensaje "✅ Rebuild completed!"
+
+**Sin file watching:**
+Recuerda ejecutar `npm run build` antes de `npm run dev`:
+
 ```bash
 npm run build && npm run dev
 ```
@@ -208,13 +344,17 @@ npm run build && npm run dev
 ### Placeholders no se reemplazan
 
 Verifica que el placeholder en `src/index.html` coincida con el nombre del archivo:
+
 ```html
 <!-- Correcto -->
-<!-- components/header -->  → src/components/header.html
-<!-- pages/home -->         → src/pages/home.html
+<!-- components/header -->
+→ src/components/header.html
+<!-- pages/home -->
+→ src/pages/home.html
 
 <!-- Incorrecto -->
-<!-- header -->             → No encontrará el archivo
+<!-- header -->
+→ No encontrará el archivo
 ```
 
 ## 🖼️ Image Optimization
@@ -224,16 +364,19 @@ El proyecto incluye un sistema automático de optimización de imágenes que gen
 ### Cómo Agregar Imágenes
 
 1. **Coloca la imagen original en** `src/assets/images/`:
+
 ```bash
 src/assets/images/mi-foto.png
 ```
 
 2. **Ejecuta el build:**
+
 ```bash
 npm run build
 ```
 
 3. **El sistema automáticamente genera** múltiples versiones optimizadas:
+
 ```
 dist/assets/images/
 ├── mi-foto-480.webp    (Mobile)
@@ -249,6 +392,7 @@ dist/assets/images/
 ### Tamaños Generados
 
 El optimizador de imágenes va a leer el archivo styles.css buscando los breakpoints CSS existentes (`--breakpoint-*`) y va a generar múltiples versiones optimizadas:
+
 - **480px**: Para móviles (hasta 481px de ancho)
 - **600px**: Para tablets (hasta 601px de ancho)
 - **800px**: Para desktops
@@ -260,21 +404,27 @@ Una vez que el build generó las imágenes optimizadas, úsalas en tu HTML:
 
 ```html
 <picture>
-  <source 
+  <source
     type="image/webp"
-    srcset="assets/images/mi-foto-480.webp 480w,
-            assets/images/mi-foto-600.webp 600w,
-            assets/images/mi-foto-800.webp 800w,
-            assets/images/mi-foto-1601.webp 1601w"
-    sizes="(max-width: 481px) 480px, (max-width: 601px) 600px, 800px">
-  <source 
+    srcset="
+      assets/images/mi-foto-480.webp   480w,
+      assets/images/mi-foto-600.webp   600w,
+      assets/images/mi-foto-800.webp   800w,
+      assets/images/mi-foto-1601.webp 1601w
+    "
+    sizes="(max-width: 481px) 480px, (max-width: 601px) 600px, 800px"
+  />
+  <source
     type="image/png"
-    srcset="assets/images/mi-foto-480.png 480w,
-            assets/images/mi-foto-600.png 600w,
-            assets/images/mi-foto-800.png 800w,
-            assets/images/mi-foto-1601.png 1601w"
-    sizes="(max-width: 481px) 480px, (max-width: 601px) 600px, 800px">
-  <img src="assets/images/mi-foto-800.png" alt="Descripción">
+    srcset="
+      assets/images/mi-foto-480.png   480w,
+      assets/images/mi-foto-600.png   600w,
+      assets/images/mi-foto-800.png   800w,
+      assets/images/mi-foto-1601.png 1601w
+    "
+    sizes="(max-width: 481px) 480px, (max-width: 601px) 600px, 800px"
+  />
+  <img src="assets/images/mi-foto-800.png" alt="Descripción" />
 </picture>
 ```
 
@@ -288,6 +438,7 @@ Una vez que el build generó las imágenes optimizadas, úsalas en tu HTML:
 ### Verificar Optimización
 
 Después del build, verifica los ahorros en la consola:
+
 ```bash
 npm run build
 
@@ -306,23 +457,55 @@ npm run build
 - **Tamaño original**: Al menos 1600px de ancho para mejor calidad en retina
 - **Testing**: Usa DevTools → Network tab para verificar qué imagen se carga
 
+## 🎯 Optimizaciones del Build
+
+El proceso de build incluye varias optimizaciones automáticas:
+
+### CSS Optimization (PurgeCSS)
+
+- **Elimina CSS no utilizado**: Solo se incluye el CSS que realmente se usa en cada página
+- **CSS inline**: El CSS se inyecta directamente en el `<head>` de cada HTML
+- **Minificación**: El CSS se minifica usando cssnano
+- **Resultado**: Archivos HTML más pequeños y menos peticiones HTTP
+
+### HTML Minification
+
+- **Colapsa espacios en blanco**: Reduce el tamaño del HTML
+- **Elimina comentarios**: Los comentarios HTML se eliminan en producción
+- **Optimiza atributos**: Elimina atributos redundantes y opcionales
+- **Resultado**: Archivos HTML más pequeños y carga más rápida
+
+### Image Optimization
+
+Ver sección [🖼️ Image Optimization](#-image-optimization) más abajo.
+
 ## 📦 Deploy
 
 Para hacer deploy del sitio:
 
 1. Ejecuta el build de producción:
+
 ```bash
 npm run build
 ```
+
+El build genera archivos optimizados en `dist/`:
+
+- HTML minificado con CSS inline
+- Imágenes optimizadas en WebP y PNG
+- JavaScript sin cambios (ya está optimizado)
 
 2. Despliega el directorio `dist/` a tu hosting:
    - **Netlify**: Arrastra `dist/` o conecta el repo
    - **Vercel**: Conecta el repo, configura `dist/` como output
    - **GitHub Pages**: Usa GitHub Actions para copiar `dist/` a `gh-pages` branch
 
+**Nota:** El servidor de desarrollo incluye compression middleware, pero en producción tu hosting debería manejar la compresión automáticamente.
+
 ## 🗂️ .gitignore
 
 El proyecto ignora:
+
 ```
 node_modules/
 .idea/

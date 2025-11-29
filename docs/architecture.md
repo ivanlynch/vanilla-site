@@ -33,8 +33,10 @@ vanilla-site/
 │   │   ├── home.html     # Contenido de la página home
 │   │   └── about.html    # Contenido de la página about
 │   ├── scripts/          # Scripts de desarrollo
-│   │   ├── build.js      # Script de build (CommonJS)
-│   │   └── dev.mjs       # Servidor de desarrollo (ES Module)
+│   │   ├── build.mjs     # Script de build (ES Module)
+│   │   ├── server.mjs    # Servidor de desarrollo (ES Module)
+│   │   ├── watcher.mjs   # File watching para desarrollo
+│   │   └── utils.mjs     # Utilidades compartidas
 │   ├── index.html        # Template base para todas las páginas
 │   ├── styles.css        # Estilos globales con CSS Layers
 │   └── index.js          # JavaScript principal
@@ -70,13 +72,17 @@ Para mantener el código DRY (Don't Repeat Yourself) sin afectar el SEO, el proy
    <!-- components/footer -->
    ```
 
-3. **Build Script** (`src/scripts/build.js`)
+3. **Build Script** (`scripts/build.mjs`)
    - Lee el template `src/index.html`
    - Lee los archivos de componentes y páginas
    - Reemplaza los placeholders `<!-- path/to/file -->` con el contenido real del archivo HTML
    - Genera archivos HTML estáticos completos en `dist/`
    - Copia assets, CSS y JS a `dist/`
-   - **Resultado**: HTML puro optimizado para SEO, sin JavaScript de carga dinámica
+   - **Optimiza CSS**: Usa PurgeCSS para eliminar CSS no utilizado
+   - **Inyecta CSS inline**: El CSS optimizado se inyecta directamente en cada HTML
+   - **Minifica HTML**: Reduce el tamaño de los archivos HTML
+   - **Optimiza imágenes**: Genera versiones responsive en WebP y PNG
+   - **Resultado**: HTML puro optimizado para SEO y rendimiento, sin JavaScript de carga dinámica
 
 #### Ejecución:
 ```bash
@@ -100,17 +106,42 @@ npm run build
 
 El proyecto incluye scripts de desarrollo para facilitar el workflow:
 
-### Build Script (`src/scripts/build.js`)
-- **Lenguaje**: CommonJS (Node.js)
-- **Función**: Genera HTML estático desde componentes
-- **Comando**: `npm run build`
-
-### Dev Server (`src/scripts/dev.mjs`)
+### Build Script (`scripts/build.mjs`)
 - **Lenguaje**: ES Module (.mjs)
-- **Función**: Servidor HTTP local para preview
+- **Función**: Genera HTML estático optimizado desde componentes
+- **Comando**: `npm run build`
+- **Características**:
+  - Optimización de CSS con PurgeCSS
+  - Inyección de CSS inline
+  - Minificación de HTML y CSS
+  - Optimización de imágenes responsive
+
+### Dev Server (`scripts/server.mjs`)
+- **Lenguaje**: ES Module (.mjs)
+- **Función**: Servidor HTTP local para preview con file watching
 - **Puerto**: 3000
 - **Comando**: `npm run dev`
 - **URL**: http://localhost:3000
+- **Características**:
+  - **File watching**: Observa cambios en `src/` y reconstruye automáticamente
+  - **Compression middleware**: Comprime respuestas HTTP para mejor rendimiento
+  - **Build automático**: Ejecuta build al iniciar y cuando detecta cambios
+
+### File Watcher (`scripts/watcher.mjs`)
+- **Lenguaje**: ES Module (.mjs)
+- **Función**: Observa cambios en archivos fuente y ejecuta callbacks
+- **Características**:
+  - Observación recursiva de directorios
+  - Debounce para evitar múltiples ejecuciones
+  - Manejo de errores robusto
+
+### Utils (`scripts/utils.mjs`)
+- **Lenguaje**: ES Module (.mjs)
+- **Función**: Utilidades compartidas para build y optimización
+- **Funciones principales**:
+  - `extractOnlyUserCSSForHTML`: Extrae CSS usado con PurgeCSS
+  - `optimizeImage`: Genera versiones responsive de imágenes
+  - `readBreakpointsFromCSS`: Lee breakpoints del CSS para optimización de imágenes
 
 **Configuración de módulos:**
 ```json
@@ -118,8 +149,8 @@ El proyecto incluye scripts de desarrollo para facilitar el workflow:
   "type": "commonjs"  // En package.json
 }
 ```
-- `build.js` usa CommonJS (`require`)
-- `dev.mjs` usa ES modules (`import`) por extensión .mjs
+- Todos los scripts usan ES modules (`.mjs`) con `import/export`
+- Node.js maneja los módulos ES mediante la extensión `.mjs`
 
 ## Frontend Stack
 
@@ -128,8 +159,16 @@ El proyecto incluye scripts de desarrollo para facilitar el workflow:
   - CSS Layers (`@layer reset`, `@layer base`, `@layer components`)
   - CSS Custom Properties (variables)
   - Dark theme como default
+  - **Optimización**: PurgeCSS para eliminar CSS no utilizado
+  - **Minificación**: cssnano para reducir tamaño
 - **JavaScript**: Vanilla JS puro, sin frameworks
-- **Build**: Node.js con scripts personalizados
+- **Build Tools**: 
+  - Node.js con scripts personalizados (ES Modules)
+  - **PurgeCSS**: Eliminación de CSS no utilizado
+  - **html-minifier-terser**: Minificación de HTML
+  - **cssnano**: Minificación de CSS
+  - **sharp**: Optimización de imágenes (WebP y PNG responsive)
+  - **compression**: Middleware de compresión para servidor de desarrollo
 - **Fonts**: 
   - Righteous Regular (logo y headers)
   - Merriweather Regular y Bold (body text)
